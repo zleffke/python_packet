@@ -1,0 +1,11 @@
+{
+    "hex_frame":"",
+    "dest":"",
+    "dest_ssid":0,
+    "src":"",
+    "src_ssid":0,
+    "control_byte":"",
+    "pid_byte":"",
+    "data":"",
+    "fcs":""
+}
