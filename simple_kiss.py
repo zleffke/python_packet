@@ -164,7 +164,7 @@ def main():
                         src_str += "-{:d}".format(ax25['src_ssid'])
                     dest_str = ax25['dest_call']
                     if ax25['dest_ssid'] > 0:
-                        src_str += "-{:d}".format(ax25['dest_ssid'])
+                        dest_str += "-{:d}".format(ax25['dest_ssid'])
 
                     aprs_str = ""
                     aprs_str += ax25['ts_utc'] + ":"

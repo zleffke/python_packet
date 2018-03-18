@@ -74,12 +74,13 @@ def main():
     print 'Serial Port Open:',ser.isOpen()
     while (1):
         try:
-
             if ser.inWaiting() >= 1:
+                #NEED TO START Checking for KISS DATA HERE
+                #Could have back to back KISS frames that jacks everything up.
                 if ts_str == "":
                     ts_str = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S.%f UTC")
                 ser_data.append(ser.read())
-                time.sleep(0.01)
+                #time.sleep(0.01)
             elif ((len(ser_data) > 0) and (ser.inWaiting() < 1)):
                 packet = True
                 packet_count += 1
