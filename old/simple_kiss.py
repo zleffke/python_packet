@@ -22,7 +22,6 @@ TFESC = 0xDD
 
 def main():
     """ Main entry point to start the service. """
-
     startup_ts = datetime.datetime.utcnow().strftime("%Y%m%d_%H%M%S")
     #--------START Command Line argument parser------------------------------------------------------
     parser = argparse.ArgumentParser(description="Simple Serial TNC Connect and Print Program")

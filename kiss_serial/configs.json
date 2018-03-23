@@ -1,0 +1,7 @@
+{
+    "serial_dev":"/dev/ttyUSB0",
+    "serial_baud":9600,
+    "log_path":"/log/relayd",
+    "log_level":"DEBUG",
+
+}
