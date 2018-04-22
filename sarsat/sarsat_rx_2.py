@@ -18,6 +18,8 @@ import numpy
 import struct
 import bitarray
 
+from sarsat_protocol_decoders import *
+
 #from optparse import OptionParser
 import argparse
 
@@ -70,7 +72,6 @@ def main():
         if data:
             sarp = {}
             packet_count += 1
-            print "\n------------------------------------------------"
             print "Packet Received: {:d}".format(packet_count)
             print "Time Stamp [UTC]:", ts_str
             sarp_msg = bytearray(data)
@@ -143,7 +144,6 @@ def main():
             dw = ((numpy.uint32(struct.unpack('<I',bytearray(dw)))[0] >> 1) & 0x7FFFFF)
             dw_1s = bin(dw).count("1")
             sarp['doppler_valid'] = (dw_1s%2==dw_parity)
-
             a = 1.0/(pow(2,19)*624)
             f_r = 5203205.0
             #b = 78 + (1/pow(2,26)) + (16.0/624.0) + (15.5/(pow(2,24)*624))
@@ -153,125 +153,119 @@ def main():
             sarp['doppler'] = f_in
             sarp['doppler_offset'] = f_in - 406.0e6
 
-            sarp_bits = bitarray.bitarray(endian='little')
-            #sarp_bits.frombytes(bytearray(sarp_msg))
-            for b in bytearray(binascii.unhexlify(sarp['beacon_data'])):
-                a = bitarray.bitarray('{0:08b}'.format(b))
-                sarp_bits.extend(a)
+            if sarp['doppler_valid'] and sarp['timecode_valid']:
+                print "\n----VALID--------------------------------------------"
+                sarp_bits = bitarray.bitarray(endian='little')
+                #sarp_bits.frombytes(bytearray(sarp_msg))
+                for b in bytearray(binascii.unhexlify(sarp['beacon_data'])):
+                    a = bitarray.bitarray('{0:08b}'.format(b))
+                    sarp_bits.extend(a)
 
-            #print len(sarp_bits), sarp_bits.to01()
+                #print len(sarp_bits), sarp_bits.to01()
 
-            if sarp['format'] == 'short-message':
-                sarp_bits = sarp_bits[:87]
-            elif sarp['format'] == 'long-message':
-                sarp_bits = sarp_bits[:119]
-            print len(sarp_bits), sarp_bits.to01()
+                if sarp['format'] == 'short-message':
+                    sarp_bits = sarp_bits[:87]
+                elif sarp['format'] == 'long-message':
+                    sarp_bits = sarp_bits[:119]
+                #print len(sarp_bits), sarp_bits.to01()
 
-            bcn_bits = {}
-            bcn_bits['protocol_flag']    = sarp_bits[0:1].to01()
-            bcn_bits['country_code']     = sarp_bits[1:11].to01()
-            id_plus_pos = sarp_bits[11:60]
-            bcn_bits['id_plus_pos']      = sarp_bits[11:60].to01()
-            bcn_bits['bch_1']            = sarp_bits[60:81].to01()
-            if sarp['format'] == 'short-message':
-                bcn_bits['em_ntnl_supp']     = sarp_bits[81:].to01()
-            elif sarp['format'] == 'long-message':
-                bcn_bits['pdf_2']     = sarp_bits[81:107].to01()
-                bcn_bits['bch_2']     = sarp_bits[107:].to01()
+                bcn_bits = {}
+                bcn_bits['protocol_flag']    = sarp_bits[0:1].to01()
+                bcn_bits['country_code']     = sarp_bits[1:11].to01()
+                id_plus_pos = sarp_bits[11:60]
+                bcn_bits['id_plus_pos']      = sarp_bits[11:60].to01()
+                bcn_bits['bch_1']            = sarp_bits[60:81].to01()
+                if sarp['format'] == 'short-message':
+                    bcn_bits['em_ntnl_supp']     = sarp_bits[81:].to01()
+                elif sarp['format'] == 'long-message':
+                    bcn_bits['pdf_2']     = sarp_bits[81:107].to01()
+                    bcn_bits['bch_2']     = sarp_bits[107:].to01()
 
-            country_code = sarp_bits[1:11]
+                country_code = sarp_bits[1:11]
 
-            # print country_code.to01(), \
-            #       binascii.hexlify(country_code.tobytes()), \
-            #       struct.unpack(">H", country_code)[0]
+                # print country_code.to01(), \
+                #       binascii.hexlify(country_code.tobytes()), \
+                #       struct.unpack(">H", country_code)[0]
 
-            cc = [0] * 2
-            cc_rev = country_code.copy()
-            cc_rev.reverse()
-            cc[0] = ord(cc_rev.tobytes()[0])
-            cc[1] = ord(cc_rev.tobytes()[1])
-            cc = bytearray(cc)
-            bcn_bits["cc_int"] = struct.unpack("<H", cc)[0]
+                cc = [0] * 2
+                cc_rev = country_code.copy()
+                cc_rev.reverse()
+                cc[0] = ord(cc_rev.tobytes()[0])
+                cc[1] = ord(cc_rev.tobytes()[1])
+                cc = bytearray(cc)
+                bcn_bits["cc_int"] = struct.unpack("<H", cc)[0]
 
-            protocol_flag = sarp_bits[0:1].tobytes()
-            #print binascii.hexlify(protocol_flag)
+                protocol_flag = sarp_bits[0:1].tobytes()
+                #print binascii.hexlify(protocol_flag)
 
-            id_plus_pos = sarp_bits[11:60]
+                id_plus_pos = sarp_bits[11:60]
 
 
-            if ord(protocol_flag) & 0x01:
-                print "user or user-location protocols"
-                prot_code = id_plus_pos[0:3]
+                if ord(protocol_flag) & 0x01:
+                    print "user or user-location protocols"
+                    prot_code = id_plus_pos[0:3]
 
-            else:
-                print "standard/national protocols"
-                prot_code = id_plus_pos[0:4]
-            #print prot_code.to01()
+                else:
+                    print "standard/national protocols"
+                    prot_code = id_plus_pos[0:4]
+                #print prot_code.to01()
 
-            #User and USer Location Protocols
-            if prot_code.to01() == "000":
-                print "Orbitography Protocol"
-            elif prot_code.to01() == "001":
-                print "ELT - Aviation User Protocol"
-            elif prot_code.to01() == "010":
-                print "EPIRB - Maritime User Protocol"
-            elif prot_code.to01() == "011":
-                print "Serial User Protocol"
-            elif prot_code.to01() == "100":
-                print "National User Protocol"
-            elif prot_code.to01() == "101":
-                print "Spare"
-            if prot_code.to01() == "110":
-                print "EPIRB - Radio Call Sign User Protocol"
-            if prot_code.to01() == "111":
-                print "Test User Protocol"
+                #User and USer Location Protocols
+                if prot_code.to01() == "000":
+                    print "Orbitography Protocol"
+                elif prot_code.to01() == "001":
+                    print "ELT - Aviation User Protocol"
+                    decode_aviation_user(id_plus_pos)
+                elif prot_code.to01() == "010":
+                    print "EPIRB - Maritime User Protocol"
+                    decode_maritime_user(id_plus_pos)
+                elif prot_code.to01() == "011":
+                    print "Serial User Protocol"
+                elif prot_code.to01() == "100":
+                    print "National User Protocol"
+                elif prot_code.to01() == "101":
+                    print "Spare"
+                if prot_code.to01() == "110":
+                    print "EPIRB - Radio Call Sign User Protocol"
+                    decode_radio_callsign_user(id_plus_pos)
+                if prot_code.to01() == "111":
+                    print "Test User Protocol"
 
-            #Standard Location and National Protocols
-            if prot_code.to01() == "0010":
-                print "EPIRB - MMSI/Location Protocol"
-            elif prot_code.to01() == "0011":
-                print "ELT - 24-bit Address/Location Protocol"
-            elif prot_code.to01() == "0100":
-                print "Serial Location Protocol: ELT - serial"
-            elif prot_code.to01() == "0101":
-                print "Serial Location Protocol: ELT - aircraft operator designator"
-            elif prot_code.to01() == "0110":
-                print "Serial Location Protocol: EPIRB - serial"
-            elif prot_code.to01() == "0111":
-                print "Serial Location Protocol: PLB - serial"
-            elif prot_code.to01() == "1100":
-                print "Ship Security"
-            elif prot_code.to01() == "1000":
-                print "National Location Protocol: ELT"
-            elif prot_code.to01() == "1010":
-                print "National Location Protocol: EPIRB"
-            elif prot_code.to01() == "1011":
-                print "National Location Protocol: PLB"
-            elif prot_code.to01() == "1110":
-                print "Standard Test Location Protocol"
-            elif prot_code.to01() == "1111":
-                print "National Test Location Protocol"
-            elif prot_code.to01() == "1101":
-                print "RLS Location Protocol"
-            elif (prot_code.to01() == "0000") or (prot_code.to01() == "0001"):
-                print "Orbitography"
-            elif prot_code.to01() == "1001":
-                print "Spare"
+                #Standard Location and National Protocols
+                if prot_code.to01() == "0010":
+                    print "EPIRB - MMSI/Location Protocol"
+                elif prot_code.to01() == "0011":
+                    print "ELT - 24-bit Address/Location Protocol"
+                elif prot_code.to01() == "0100":
+                    print "Serial Location Protocol: ELT - serial"
+                elif prot_code.to01() == "0101":
+                    print "Serial Location Protocol: ELT - aircraft operator designator"
+                elif prot_code.to01() == "0110":
+                    print "Serial Location Protocol: EPIRB - serial"
+                elif prot_code.to01() == "0111":
+                    print "Serial Location Protocol: PLB - serial"
+                elif prot_code.to01() == "1100":
+                    print "Ship Security"
+                elif prot_code.to01() == "1000":
+                    print "National Location Protocol: ELT"
+                elif prot_code.to01() == "1010":
+                    print "National Location Protocol: EPIRB"
+                elif prot_code.to01() == "1011":
+                    print "National Location Protocol: PLB"
+                elif prot_code.to01() == "1110":
+                    print "Standard Test Location Protocol"
+                elif prot_code.to01() == "1111":
+                    print "National Test Location Protocol"
+                elif prot_code.to01() == "1101":
+                    print "RLS Location Protocol"
+                elif (prot_code.to01() == "0000") or (prot_code.to01() == "0001"):
+                    print "Orbitography"
+                elif prot_code.to01() == "1001":
+                    print "Spare"
 
-            #print json.dumps(sarp, indent=4)
-            #print json.dumps(bcn_bits, indent=4)
-
-            # new_kiss = bytearray()
-            # kiss_command = new_kiss.pop(0)
-            # kiss_port = (kiss_command >> 4) & 0x0F #Hi Nibble
-            # kiss_cmd = (kiss_command) & 0x0F #Low Nibble
-            # ax25['kiss_port'] = '0x{:02X}'.format(kiss_port)
-            # ax25['kiss_cmd'] = '0x{:02X}'.format(kiss_cmd)
-            # ax25_frame = new_kiss #since we've popped the last KISS character, rename the variable
-            # print 'KISS Port: 0x{:02X}'.format(kiss_port)
-            # print 'KISS Command: 0x{:02X}'.format(kiss_cmd)
-            # print ' AX.25 Frame: {:s}'.format(str(binascii.hexlify(ax25_frame)))
-            # print ax25_frame
+                #print json.dumps(sarp, indent=4)
+                #print json.dumps(bcn_bits, indent=4)
+                print "----VALID--------------------------------------------\n"
 
     sys.exit()
 
