@@ -71,3 +71,34 @@ def decode_aviation_user(bits):
 
     print json.dumps(msg_bin, indent=4)
     return msg_bin
+
+def decode_national_location_plb(bits):
+    print "---National Location PLB Protocol---"
+    protocol_code   = bits[0:4]
+    identification  = bits[4:22]
+    north_south     = bits[23]
+    latitude_deg    = bits[24:31]
+    latitude_min    = bits[31:36]
+    east_west       = bits[36]
+    longitude_deg   = bits[37:45]
+    longitude_min   = bits[45:50]
+
+    lat_deg = ord(latitude_deg.tobytes())
+    lat_min = ord(latitude_min.tobytes())
+    latitude = lat_deg + lat_min/60.0
+    if north_south: latitude = latitude * -1
+
+    lon_deg = ord(longitude_deg.tobytes())
+    lon_min = ord(longitude_min.tobytes())
+    longitude = lon_deg + lon_min/60.0
+    if east_west: longitude = longitude * -1
+
+    print latitude, longitude
+
+
+    msg_bin = {}
+    msg_bin['protocol_code']    = protocol_code.to01()
+
+
+    print json.dumps(msg_bin, indent=4)
+    return msg_bin

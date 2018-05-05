@@ -72,8 +72,8 @@ def main():
         if data:
             sarp = {}
             packet_count += 1
-            print "Packet Received: {:d}".format(packet_count)
-            print "Time Stamp [UTC]:", ts_str
+            #print "Packet Received: {:d}".format(packet_count)
+            #print "Time Stamp [UTC]:", ts_str
             sarp_msg = bytearray(data)
             print "SARP Message Hex: {:s}".format(binascii.hexlify(sarp_msg))
             sync_word = [0] * 2
@@ -168,7 +168,7 @@ def main():
                 elif sarp['format'] == 'long-message':
                     sarp_bits = sarp_bits[:119]
                 #print len(sarp_bits), sarp_bits.to01()
-
+                print sarp['format']
                 bcn_bits = {}
                 bcn_bits['protocol_flag']    = sarp_bits[0:1].to01()
                 bcn_bits['country_code']     = sarp_bits[1:11].to01()
@@ -252,6 +252,7 @@ def main():
                     print "National Location Protocol: EPIRB"
                 elif prot_code.to01() == "1011":
                     print "National Location Protocol: PLB"
+                    decode_national_location_plb(id_plus_pos)
                 elif prot_code.to01() == "1110":
                     print "Standard Test Location Protocol"
                 elif prot_code.to01() == "1111":
@@ -263,7 +264,7 @@ def main():
                 elif prot_code.to01() == "1001":
                     print "Spare"
 
-                #print json.dumps(sarp, indent=4)
+                print json.dumps(sarp, indent=4)
                 #print json.dumps(bcn_bits, indent=4)
                 print "----VALID--------------------------------------------\n"
 
