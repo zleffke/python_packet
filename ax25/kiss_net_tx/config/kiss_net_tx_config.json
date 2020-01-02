@@ -1,0 +1,16 @@
+{
+    "name":"kiss_net_tx",
+    "version":"0.0.1",
+    "log":{
+        "level":"DEBUG",
+        "verbose":true,
+        "path":"/log/packet_kiss_net"
+    },
+    "network":{
+        "ip":"0.0.0.0",
+        "port":8000,
+        "delay":1.0,
+        "timeout":5.0,
+        "auto":1
+    }
+}

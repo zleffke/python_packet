@@ -1,0 +1,10 @@
+{
+  "dest_call":"WJ2XOH",
+  "dest_ssid":0,
+  "src_call":"WJ2XOH",
+  "src_ssid":1,
+  "payload":{
+    "syntax":"ascii",
+    "message":"HELLO"
+  }
+}
