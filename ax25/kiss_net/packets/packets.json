@@ -1,0 +1,32 @@
+{
+  "header":{
+    "dest_call":"WJ2XOH",
+    "dest_ssid":0,
+    "src_call":"WJ2XOH",
+    "src_ssid":1,
+    "control":"03",
+    "pid":"F0"
+  },
+  "payloads":[
+    {
+      "name":"odu_Hello",
+      "syntax":"ascii",
+      "message":"Hello"
+    },
+    {
+      "name":"odu_hello",
+      "syntax":"ascii",
+      "message":"hello"
+    },
+    {
+      "name":"odu_HELLO",
+      "syntax":"ascii",
+      "message":"HELLO"
+    },
+    {
+      "name":"lithium_ping",
+      "syntax":"hex",
+      "message":"00000000000000000000000000000031"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Logger utilities
 
@@ -30,7 +30,7 @@ def setup_logger(cfg):
 
     #formatter = MyFormatter(fmt='%(asctime)s | %(threadName)8s | %(levelname)8s | %(message)s',datefmt='%Y-%m-%dT%H:%M:%S.%fZ')
     #formatter = MyFormatter(fmt='[%(asctime)s][%(threadName)8s][%(levelname)8s] %(message)s',datefmt='%Y-%m-%dT%H:%M:%S.%fZ')
-    formatter = MyFormatter(fmt='[%(asctime)s | %(threadName)14s | %(levelname)8s] %(message)s',datefmt='%Y-%m-%dT%H:%M:%S.%fZ')
+    formatter = MyFormatter(fmt='[%(asctime)s | %(threadName)s | %(levelname)8s] %(message)s',datefmt='%Y-%m-%dT%H:%M:%S.%fZ')
 
     log = logging.getLogger(name)
     if   level == 'DEBUG'   : log.setLevel(logging.DEBUG)
@@ -48,6 +48,6 @@ def setup_logger(cfg):
         streamHandler = logging.StreamHandler(sys.stdout)
         streamHandler.setFormatter(formatter)
         log.addHandler(streamHandler)
-        print "STDOUT Logger Initialized, Switching to Stream Handler...."
+        print ("STDOUT Logger Initialized, Switching to Stream Handler....")
     log.info('Logger Initialized')
     return log
