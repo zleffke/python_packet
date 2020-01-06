@@ -113,6 +113,16 @@ class Simple_CLI(cmd.Cmd, threading.Thread):
     def do_connect(self,line):
         print("Connecting...")
 
+    def do_auto(self,line):
+        '''
+        Automatic TX Control
+        Syntax:
+            auto <index>
+            auto stop
+            auto STOP
+        '''
+        pass
+
 
 
     def do_status(self, line):

@@ -8,7 +8,7 @@
   },
   "packet":{
     "path":"CWD",
-    "file":"packets.json"
+    "file":"packets_odu.json"
   },
   "thread_enable":{
     "network": true,
@@ -18,12 +18,12 @@
     "thread_name":"Network_Thread",
     "name":"net",
     "type":"TCP",
-    "ip":"0.0.0.0",
+    "ip":"10.0.11.3",
     "port":8000,
     "retry_time":5.0,
     "timeout":0.01,
     "log":{
-      "verbose":false
+      "verbose":true
     }
   },
   "user":{

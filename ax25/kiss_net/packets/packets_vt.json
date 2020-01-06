@@ -1,0 +1,32 @@
+{
+  "header":{
+    "dest_call":"WJ2XMS",
+    "dest_ssid":0,
+    "src_call":"WJ2XMS",
+    "src_ssid":1,
+    "control":"03",
+    "pid":"F0"
+  },
+  "payloads":[
+    {
+      "name":"lithium_ping_0",
+      "syntax":"hex",
+      "message":"0000000000000000000000000000000031"
+    },
+    {
+      "name":"lithium_reset_0",
+      "syntax":"hex",
+      "message":"0000000000000000000000000000000033"
+    },
+    {
+      "name":"lithium_ping",
+      "syntax":"hex",
+      "message":"0E20564343205654204345524553202031"
+    },
+    {
+      "name":"lithium_reset",
+      "syntax":"hex",
+      "message":"0E20564343205654204345524553202033"
+    }
+  ]
+}
