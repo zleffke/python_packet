@@ -1,0 +1,22 @@
+{
+  "header":{
+    "dest_call":"WJ2XMR",
+    "dest_ssid":0,
+    "src_call":"KJ4QLP",
+    "src_ssid":1,
+    "control":"03",
+    "pid":"F0"
+  },
+  "payloads":[
+    {
+      "name":"lithium_ping_0",
+      "syntax":"hex",
+      "message":"0000000000000000000000000000000031"
+    },
+    {
+      "name":"lithium_reset_0",
+      "syntax":"hex",
+      "message":"0000000000000000000000000000000033"
+    }
+  ]
+}

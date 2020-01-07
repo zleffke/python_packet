@@ -8,7 +8,7 @@
   },
   "packet":{
     "path":"CWD",
-    "file":"packets_uva.json"
+    "file":"packets_odu.json"
   },
   "thread_enable":{
     "network": true,
