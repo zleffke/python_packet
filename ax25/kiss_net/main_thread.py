@@ -123,6 +123,18 @@ class Main_Thread(threading.Thread):
                 "hex":kiss.hex()
             }
             self.packets.append(pkt)
+        for i, pld in enumerate(pkt_dict['raw']):
+            if pld['protocol'].upper() == 'KISS':
+                pkt = {
+                    "index":len(self.packets),
+                    "name":pld['name'],
+                    "hex":pld['message']
+                }
+            elif pld['protocol'].upper() == "AX25":
+                pass
+                #TODO:  raw AX25 done, wrap in KISS
+                #
+            self.packets.append(pkt)
         self.logger.info('Imported Packets: {:s}'.format(json.dumps(self.packets)))
         self.user_thread.set_packets(self.packets)
     #---- END PACKET HANDLERS -----------------------------------

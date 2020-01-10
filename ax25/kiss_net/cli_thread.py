@@ -46,26 +46,34 @@ class Simple_CLI(cmd.Cmd, threading.Thread):
     def do_list(self, line):
         ''' List avaialable packets '''
 
+        disp_len_hex = 80 #number of hex characters per line to display
+        disp_len_other = 28
         if self.packets is not None:
-            #for pkt_key in self.packets
-            length = 0
-            for i,cmd in enumerate(self.packets):
-                l = len(cmd['hex']) + len(cmd['name']) + 10 +3+3
-                if l > length: length = l
-
             print("Available KISS Commands:")
             #print(self.packets)
-            banner = "=" * length
+            banner = "=" * (disp_len_hex+disp_len_other)
             print (banner)
             print("|{:^3s}|{:^20s}| {:s}".format("IDX","NAME", "HEX"))
             print (banner)
             for i, cmd in enumerate(self.packets):
                 #print(cmd)
-                print ("|{:^3d}|{:20s}| {:s}".format(i, cmd['name'], cmd['hex']))
+                #if len(cmd['hex']) < disp_len:
+                #    print ("|{:^3d}|{:20s}| {:s}".format(i, cmd['name'], cmd['hex']))
+                #else:
+                hex_chunks = list(self._chunkstring(cmd['hex'], disp_len_hex))
+                for j, hc in enumerate(hex_chunks):
+                    if j == 0:
+                        print ("|{:^3d}|{:20s}| {:s}".format(i, cmd['name'], hc))
+                    else:
+                        print ("|   |{:20s}| {:s}".format(' ', hc))
+
                 #print(i, cmd, '\t',self.packets[i])
             print (banner)
         else:
             print("No packets")
+
+    def _chunkstring(self, string, length):
+        return (string[0+i:length+i] for i in range(0, len(string), length))
 
     def do_send(self, cmd):
         '''
