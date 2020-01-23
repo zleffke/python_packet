@@ -1,0 +1,29 @@
+{
+  "name":"adsb_parse",
+  "version":"0.0.1",
+  "log_path":"/log/packet/adsb",
+  "main_log":{
+    "level":"DEBUG",
+    "verbose":false
+  },
+  "thread_enable":{
+    "network": true
+  },
+  "geo":{
+    "rx_lat":32.696966,
+    "rx_lon":-117.248741,
+    "rx_alt":0.1
+  },
+  "network":{
+    "thread_name":"Network_Thread",
+    "name":"net",
+    "type":"TCP",
+    "ip":"0.0.0.0",
+    "port":52001,
+    "retry_time":1.0,
+    "timeout":0.01,
+    "log":{
+      "verbose":false
+    }
+  }
+}
