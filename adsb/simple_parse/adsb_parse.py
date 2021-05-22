@@ -85,8 +85,13 @@ def main():
             'level':cfg['main_log']['level']
         })
 
+    if 'current' in cfg['out_path']:
+        cfg['out_path'] = "/".join([cwd,'output'])
+    cfg['out_file'] = "_".join([cfg['out_file'],startup_ts])
+    cfg['out_file'] = ".".join([cfg['out_file'],'json'])
 
     print (json.dumps(cfg, indent=4))
+    #sys.exit()
 
     main_thread = Main_Thread(cfg, name="Main_Thread")
     main_thread.daemon = True

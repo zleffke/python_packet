@@ -16,6 +16,7 @@ import datetime
 import json
 import numpy
 import uuid
+import pandas as pd
 
 from logger import *
 from network_thread import *
@@ -48,6 +49,9 @@ class Main_Thread(threading.Thread):
         self.rx_lat = self.cfg['geo']['rx_lat']
         self.rx_lon = self.cfg['geo']['rx_lon']
         self.rx_alt = self.cfg['geo']['rx_alt']
+
+        self.valid = [] #list of valid packets
+        self.out_fp = "/".join([self.cfg['out_path'],self.cfg['out_file']])
 
     def run(self):
         self.logger.info('Launched {:s}'.format(self.name))
@@ -99,50 +103,15 @@ class Main_Thread(threading.Thread):
     def _set_state(self, state):
         self.state = state
         self.logger.info('Changed STATE to: {:s}'.format(self.state))
+        #self.watchdog = Watchdog(10, 'PTT Watchdog', self._watchdog_expired)
+        #self.watchdog.start()
     #---- END STATE HANDLERS -----------------------------------
-    ###############################################################
-    #---- PACKET HANDLERS -----------------------------------
-    def _import_packets(self):
-        pkt_path = self.cfg['packet']['path']
-        pkt_file = self.cfg['packet']['file']
-        fp_pkt = '/'.join([pkt_path,pkt_file])
-        self.logger.info('Importing Packets from: {:s}'.format(fp_pkt))
-        with open(fp_pkt, 'r') as json_data:
-            pkt_dict = json.load(json_data)
-            json_data.close()
-        print(pkt_dict)
-        self.packets = []
-        for i, pld in enumerate(pkt_dict['payloads']):
-            pkt = pkt_dict['header']
-            pkt['payload'] = pkt_dict['payloads'][i]
-            ax25 = DictToAx25(pkt)
-            kiss = Ax25ToKiss(ax25)
-            pkt = {
-                "index":i,
-                "name":pld['name'],
-                "hex":kiss.hex()
-            }
-            self.packets.append(pkt)
-        for i, pld in enumerate(pkt_dict['raw']):
-            if pld['protocol'].upper() == 'KISS':
-                pkt = {
-                    "index":len(self.packets),
-                    "name":pld['name'],
-                    "hex":pld['message']
-                }
-            elif pld['protocol'].upper() == "AX25":
-                pass
-                #TODO:  raw AX25 done, wrap in KISS
-                #
-            self.packets.append(pkt)
-        self.logger.info('Imported Packets: {:s}'.format(json.dumps(self.packets)))
-        self.user_thread.set_packets(self.packets)
-    #---- END PACKET HANDLERS -----------------------------------
     ###############################################################
     #---- CHILD THREAD COMMS HANDLERS & CALLBACKS ----------------------------
     def _process_network_message(self, msg):
         #print (type(msg))
         #print (str(msg))
+        #self.watchdog.reset()
         try:
             msg_dict = json.loads(msg)
             if 'altitude' in msg_dict.keys():
@@ -153,12 +122,29 @@ class Main_Thread(threading.Thread):
                         #RAZEL(deployed_lat,deployed_lon,deployed_alt, balloon_lat,balloon_lon,balloon_alt)
                         razel = RAZEL(self.rx_lat,self.rx_lon,self.rx_alt,
                                       msg_dict['latitude'], msg_dict['longitude'],
-                                      msg_dict['altitude']*0.0003048)
-                        msg_dict['razel'] = razel
-                print (json.dumps(msg_dict, indent=4))
+                                      msg_dict['altitude']*0.0003048) #convert to km
+                        #msg_dict['razel'] = razel
+                        msg_dict['range'] = razel['rho_mag']
+                        msg_dict['azimuth'] = razel['az']
+                        msg_dict['elevation'] = razel['el']
+                        #msg_pd = pd.DataFrame(msg_dict)
+                        self.valid.append(msg_dict)
+                        print (json.dumps(msg_dict, indent=4))
+                        print("Updating to JSON File: {:s}".format(self.out_fp))
+                        with open(self.out_fp, 'w') as ofp:
+                            json.dump(self.valid, ofp, indent = 4)
         except Exception as e:
             print (e)
             print (msg)
+
+    def _watchdog_expired(self):
+        print ("---------- WATCHDOG!!!!!---------------------")
+        print (len(self.valid))
+        out_fp = "/".join([self.cfg['out_path'],self.cfg['out_file']])
+        print("Writing to JSON File: {:s}".format(out_fp))
+        with open(out_fp, 'w') as ofp:
+            json.dump(self.valid, ofp, indent = 4)
+
 
     def set_connected_status(self, status): #called by service thread
         self.connected = status
@@ -169,15 +155,6 @@ class Main_Thread(threading.Thread):
         if (self.cfg['thread_enable']['network'] and (not self.network_thread.rx_q.empty())): #Received a message from user
             msg = self.network_thread.rx_q.get()
             self._process_network_message(msg)
-
-    def _ptt_watchdog_expired(self):
-        self.logger.info('PTT Watchdog Expired')
-        self._set_state('RX')
-
-    def _send_device_msg(self,msg):
-        self.logger.info('Sent Signal to {:s}: {:s}'.format(self.cfg['device']['name'], msg))
-        self.device_thread.tx_q.put(msg)
-    #---- END CHILD THREAD COMMS HANDLERS & CALLBACKS ----------------------------
     ###############################################################
     #---- MAIN THREAD CONTROLS -----------------------------------
     def _init_threads(self):

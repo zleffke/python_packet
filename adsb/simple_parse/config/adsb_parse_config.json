@@ -2,6 +2,8 @@
   "name":"adsb_parse",
   "version":"0.0.1",
   "log_path":"/log/packet/adsb",
+  "out_path":"current/output",
+  "out_file":"adsb_valid",
   "main_log":{
     "level":"DEBUG",
     "verbose":false
